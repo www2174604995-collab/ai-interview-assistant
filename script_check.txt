@@ -1,0 +1,24 @@
+Script start pos: 12456
+Script end pos: 27038
+</script> inside JS: 0
+Positions: []
+
+
+--- Last 500 chars of JS ---
+"password";
+}
+
+function loadApiKeyStatus() {
+  if (!token) return;
+  fetch(API + "/api/user/api-key", {
+    headers: { "Authorization": "Bearer " + token }
+  }).then(function(r) { return r.json(); }).then(function(d) {
+    if (d.code === 200 && d.data && d.data.hasKey) {
+      var st = document.getElementById("apiKeyStatus");
+      st.style.display = "";
+      st.innerHTML = "\u5f53\u524d\u5df2\u914d\u7f6e " + d.data.masked;
+      st.style.borderLeft = "3px solid var(--success)";
+    }
+  });
+}
+

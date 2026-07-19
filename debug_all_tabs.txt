@@ -1,0 +1,185 @@
+=== auth (len=767) ===
+id="tab-auth">
+<div class="grid-2">
+<div class="card"><h3>注册新账号</h3>
+<div class="form-row"><label>用户名</label><input type="text" id="regUsername" value="demo"></div>
+<div class="form-row"><label>邮箱</label><input type="email" id="regEmail" value="demo@example.com"></div>
+<div class="form-row"><label>密码</label><input type="password" id="regPassword" value="demo123"></div>
+<button class="btn btn-primary" onclick="register()">注册</button></div>
+<div class="card"><h3>登录</h3>
+<div class="form-row"><label>用户名</label><input type="text" id="loginUsername" value="demo"></div>
+<div class="form-row"><label>密码</label><input type="password" id="loginPassword" value="demo123"></div>
+<button class="btn btn-primary" onclick="login()">登录</button></div>
+</div></div>
+
+<div class
+
+=== interview (len=1287) ===
+id="tab-interview">
+<div class="grid-2">
+<div class="card"><h3>开始面试</h3>
+<div class="form-row"><label>应聘职位</label><input type="text" id="startPosition" value="Java后端开发"></div>
+<div class="form-row"><label>难度</label>
+<select id="startDifficulty"><option value="EASY">简单</option><option value="MEDIUM" selected>中等</option><option value="HARD">困难</option></select></div>
+<button class="btn btn-primary" onclick="startInterview()">开始面试</button></div>
+<div class="card"><h3>发送回答</h3>
+<div class="form-row"><label>会话ID</label><input type="number" id="chatSessionId" placeholder="开始后自动填入"></div>
+<div class="form-row"><label>你的回答</label>
+<textarea id="chatMessage" rows="3" placeholder="Enter发送, Shift+Enter换行"></textarea></div>
+<div style="display:flex;gap:6px;">
+<button class="btn btn-primary" id="sendBtn" onclick="sendChat()" style="flex:1;">发送</button>
+<button class="btn btn-sm" style="background:var(--warn);color:#000;font-weight:600;" onclick="endInterview()">结束面试</button>
+</div></div></div>
+<div class="card"><h3><span id="chatHeader">对话面板</span> <span id="sessionStatus" style="font-size:0.7em;color:var(--muted);font-weight:400;"></span></h3>
+<div class="chat-box" id="chatBox"><div style="text-align:center;color:var(--muted);padding:30px;">点击"开始面试"开启模拟面试</div></div>
+
+<div class
+
+=== history (len=765) ===
+id="tab-history">
+<div class="grid-2">
+<div class="card"><h3>面试列表</h3><button class="btn btn-primary btn-sm" onclick="loadHistory()">刷新</button><div id="historyList"></div></div>
+<div class="card" id="historyDetailCard" style="display:none;">
+<h3>会话详情 <span id="historyDetailTitle"></span></h3>
+<div style="margin-bottom:8px;display:flex;gap:6px;flex-wrap:wrap;">
+<button class="btn btn-success btn-sm" id="genReportFromHistory" onclick="generateReportFromHistory()">生成报告</button>
+<button class="btn btn-primary btn-sm" onclick="loadToChat()">加载到对话</button>
+<button class="btn btn-sm" style="background:var(--border);color:var(--text);" onclick="closeHistoryDetail()">关闭</button></div>
+<div class="msg-list" id="historyMessages"></div></div></div></div>
+
+<div class
+
+=== report (len=613) ===
+id="tab-report">
+<div class="grid-2">
+<div class="card"><h3>生成报告</h3>
+<div class="form-row"><label>会话ID</label><input type="number" id="reportSessionId" placeholder="输入ID生成报告"></div>
+<button class="btn btn-primary" onclick="generateReport()">生成评估报告</button></div>
+<div class="card"><h3>查看报告</h3>
+<div class="form-row"><label>会话ID</label><input type="number" id="getReportSessionId" placeholder="输入ID查看"></div>
+<button class="btn btn-primary" onclick="getReport()">查看报告</button></div></div>
+<div class="card" id="reportContent" style="display:none;"><h3>评估报告</h3><div id="reportBody"></div></div></div>
+
+<div class
+
+=== resume (len=1282) ===
+id="tab-resume">
+<div class="card"><h3>上传简历</h3>
+<p style="font-size:0.85em;color:var(--muted);margin-bottom:12px;">支持 PDF、DOCX 格式，5MB 限制。AI 面试官会根据简历内容针对性提问。</p>
+<div style="border:2px dashed var(--border);border-radius:10px;padding:30px;text-align:center;margin-bottom:12px;" id="dropZone">
+<div style="font-size:2.5em;margin-bottom:8px;">📄</div>
+<p style="color:var(--muted);font-size:0.9em;">拖拽文件到此处，或点击选择</p>
+<input type="file" id="fileInput" accept=".pdf,.docx" style="display:none;">
+<button class="btn btn-primary" style="margin-top:10px;" onclick="chooseFile()">选择文件</button></div>
+<div id="resumeStatus" style="display:none;padding:12px;background:var(--bg);border-radius:8px;margin-bottom:10px;"></div>
+<div id="resumePreview" style="display:none;">
+<h4 style="font-size:0.9em;color:var(--muted);margin-bottom:6px;">简历文本预览</h4>
+<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:0.82em;line-height:1.6;max-height:300px;overflow-y:auto;white-space:pre-wrap;" id="resumePreviewText"></div>
+<div id="resumeDeleteBtn" style="display:none;margin-top:8px;"><a href="javascript:void(0)" onclick="deleteResume()" style="color:var(--error);font-size:0.85em;text-decoration:none;">✨ 删除简历</a></div>
+</div></div></div>
+
+<div class
+
+=== settings (len=5740) ===
+id="tab-settings">
+  <div class="card">
+    <h3>⚙️ API Key 设置</h3>
+    <p style="font-size:0.85em;color:var(--muted);margin-bottom:12px;">
+      配置你的 DeepSeek API Key。每个用户使用自己的 Key，互不影响。
+      <a href="https://platform.deepseek.com/api_keys" target="_blank" style="color:var(--primary);">去 DeepSeek 获取 Key →</a>
+    </p>
+    <div class="form-row">
+      <label>DeepSeek API Key</label>
+      <input type="password" id="apiKeyInput" placeholder="输入你的 sk-..." style="font-family:monospace;">
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-primary" onclick="saveApiKey()">保存</button>
+      <button class="btn btn-sm" style="background:var(--border);color:var(--text);" onclick="toggleApiKeyVisibility()">显示/隐藏</button>
+    </div>
+    <div id="apiKeyStatus" style="display:none;margin-top:10px;padding:10px;background:var(--bg);border-radius:6px;font-size:0.85em;"></div>
+  </div>
+
+  <div class="card">
+    <h3>💡 使用说明</h3>
+    <ul style="font-size:0.85em;color:var(--muted);line-height:2;padding-left:16px;">
+      <li>API Key 仅保存在你自己的账号中，其他用户无法查看</li>
+      <li>每次对话时会使用你的 Key 调用 AI 模型</li>
+      <li>如果未配置 Key，开始面试时会提示你去设置</li>
+      <li>生产环境中 Key 会加密存储，传输使用 HTTPS</li>
+    </ul>
+  </div>
+</div>
+</div>
+
+<script>
+var API = "";
+var token = localStorage.getItem("jwt_token") || "";
+var currentSessionId = null;
+var historySessionId = null;
+updateUI();
+
+function updateUI() {
+  var b = document.getElementById("loginBadge"), d = document.getElementById("tokenDisplay"), o = document.getElementById("logoutBtn");
+  if (token) { b.textContent = "已登录"; b.className = "badge badge-on"; d.value = token.substring(0,15)+"..."; o.style.display = ""; }
+  else { b.textContent = "未登录"; b.className = "badge badge-off"; d.value = "-"; o.style.display = "none"; }
+}
+
+function toast(msg, t) {
+  var el = document.createElement("div"); el.className = "toast-item toast-"+t; el.textContent = msg;
+  document.getElementById("toast").appendChild(el);
+  setTimeout(function(){ el.style.transition="opacity 0.3s"; el.style.opacity="0"; setTimeout(function(){el.remove()},300); }, 3000);
+}
+
+function api(m, p, b) {
+  var o = {method:m, headers:{"Content-Type":"application/json"}};
+  if (token) o.headers["Authorization"] = "Bearer "+token;
+  if (b) o.body = JSON.stringify(b);
+  return fetch(API+p, o).then(function(r){return r.json()})["catch"](function(){return{code:500,message:"网络错误"}});
+}
+
+function setToken(t){token=t;localStorage.setItem("jwt_token",t);updateUI();}
+function logout(){token="";localStorage.removeItem("jwt_token");updateUI();toast("已退出登录","info");}
+function register(){api("POST","/api/auth/register",{username:document.getElementById("regUsername").value,email:document.getElementById("regEmail").value,password:document.getElementById("regPassword").value}).then(function(d){if(d.code===200){setToken(d.data.token);toast("注册成功! "+d.data.username,"success")}else{toast("注册失败: "+(d.message||"未知错误"),"error")}})}
+function login(){api("POST","/api/auth/login",{username:document.getElementById("loginUsername").value,password:document.getElementById("loginPassword").value}).then(function(d){if(d.code===200){setToken(d.data.token);toast("登录成功! "+d.data.username,"success")}else{toast("登录失败: "+(d.message||"用户名或密码错误"),"error")}})}
+
+function startInterview(){
+  if(!token){toast("请先登录","error");return}
+  // 检查是否有简历，有则提示正在分析
+  fetch(API+"/api/resume",{headers:{"Authorization":"Bearer "+token}}).then(function(r){return r.json()}).then(function(d){if(d.code===200&&d.data&&d.data.hasResume){toast("正在分析简历并生成面试问题，请稍候...","info")}});
+  toast("正在开始面试...","info");
+  api("POST","/api/interview/start",{position:document.getElementById("startPosition").value,difficulty:document.getElementById("startDifficulty").value}).then(function(d){
+    if(d.code===200){currentSessionId=d.data.sessionId;document.getElementById("chatSessionId").value=currentSessionId;document.getElementById("chatHeader").textContent="对话面板 - 会话 #"+currentSessionId;var box=document.getElementById("chatBox");box.innerHTML="";addMsg("ai",d.data.reply);toast("面试已开始! 会话 #"+currentSessionId,"success")}
+    else{toast("失败: "+(d.message||"未知错误"),"error")}})
+}
+
+function sendChat(){
+  var sid=document.getElementById("chatSessionId").value,msg=document.getElementById("chatMessage").value;
+  if(!sid){toast("请先开始面试","error");return}
+  if(!msg.trim()){toast("请输入回答","error");return}
+  addMsg("user",msg);document.getElementById("chatMessage").value="";
+  var btn=document.getElementById("sendBtn");btn.textContent="思考中...";btn.disabled=true;
+  api("POST","/api/interview/chat",{sessionId:parseInt(sid),message:msg}).then(function(d){
+    btn.textContent="发送";btn.disabled=false;document.getElementById("chatMessage").focus();
+    if(d.code===200&&d.data){addMsg("ai",d.data.reply);if(d.data.completed)setTimeout(function(){toast("面试已结束! 可生成报告","info")},500)}
+    else{addMsg("ai","错误: "+(d.message||"发送失败"))}})
+}
+
+
+function loadResume(){
+  if(!token)return;
+  fetch(API+"/api/resume",{headers:{"Authorization":"Bearer "+token}}).then(function(r){return r.json()}).then(function(d){
+    if(d.code===200&&d.data&&d.data.hasResume){
+      document.getElementById("resumeStatus").style.display="";
+      document.getElementById("resumeStatus").innerHTML="已上传简历，共 "+d.data.chars+" 个字符";
+      document.getElementById("resumeStatus").style.borderLeft="3px solid var(--success)";
+      document.getElementById("resumePreview").style.display="";
+      document.getElementById("resumePreviewText").textContent=d.data.preview+"...";
+      document.getElementById("resumeDeleteBtn").style.display="";
+    }
+  });
+}
+
+function switchTab(name){
+  document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active")});
+  document.querySelectorAll(
+

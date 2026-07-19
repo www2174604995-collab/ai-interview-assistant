@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="AiInterviewApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+    <module name="ai-interview-assistant" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="com.aiinterview.AiInterviewApplication" />
+    <option name="ACTIVE_PROFILES" value="dev" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

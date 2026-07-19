@@ -1,0 +1,123 @@
+Script start (12456):
+<script>
+var API = "";
+var token = localStorage.getItem("jwt_token") || "";
+var currentSessionId = null;
+var historySessionId = null;
+updateUI();
+
+function updateUI() {
+  var b = document.getElementById("loginBadge"), d = document.getElementById("tokenDisplay"), o = document.getElementById("logoutBtn");
+  if (token) { b.textContent = "已登录"; b.className = "badge badge-on"; d.value = token.substring(0,15)+"..."; o.style.display = ""; }
+  else { b.textContent = "未登录"; b.className = "badge badge-off"; d.value = "-"; o.style.display = "none"; }
+}
+
+function toast(msg, t) {
+  var el = document.createElement("div"); el.className = "toast-item toast-"+t; el.textContent = msg;
+  document.getElementById("toast").appendChild(el);
+  setTimeout(function(){ el.style.transition="opacity 0.3s"; el.style.op
+
+switchTab:
+function switchTab(name){
+  document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active")});
+  document.querySelectorAll(".tab-content").forEach(function(t){t.classList.remove("active")});
+  var idx={auth:0,interview:1,history:2,report:3,resume:4,settings:5}[name];
+  if (idx !== undefined) { document.querySelectorAll(".tab")[idx].classList.add("active"); document.getElementById("tab-"+name).classList.add("active"); }
+  if(name==="history")loadHistory();
+  if(name==="resume")setTimeout(loadResume,100);
+  if(name==="settings")setTimeout(loadApiKeyStatus,100);
+}
+
+
+loadHistory:
+function loadHistory(){
+  if(!token){toast("请先登录","error");return}
+  api("GET","/api/interview/sessions").then(function(d){
+    var el=document.getElementById("historyList");
+    if(!d.data||d.data.length===0){el.innerHTML='<div style="color:var(--muted);padding:30px;text-align:center;">暂无记录</div>';return}
+    el.innerHTML=d.data.map(function(s){
+      var st=s.status==="COMPLETED"?"[完成]":"[进行]";
+      var t=new Date(s.createdAt).toLocaleString("zh-CN");
+      return '<div class="history-item" onclick="viewSession('+s.id+')"><div class="left"><div class="title">'+(s.position||"未知")+'</div><div class="meta">'+s.difficulty+" - "+(s.totalTurns||0)+"轮 - "+(s.messageCount||0)+"条</div></div><div class=\"right\">"+st+"<br>"+t+"</div></div>"}).join("")})
+}
+
+
+loadResume:
+function loadResume(){
+  if(!token)return;
+  fetch(API+"/api/resume",{headers:{"Authorization":"Bearer "+token}}).then(function(r){return r.json()}).then(function(d){
+    if(d.code===200&&d.data&&d.data.hasResume){
+      document.getElementById("resumeStatus").style.display="";
+      document.getElementById("resumeStatus").innerHTML="已上传简历，共 "+d.data.chars+" 个字符";
+      document.getElementById("resumeStatus").style.borderLeft="3px solid var(--success)";
+      document.getElementById("resumePreview").style.display="";
+      document.getElementById("resumePreviewText").textContent=d.data.preview+"...";
+      document.getElementById("resumeDeleteBtn").style.display="";
+    }
+  });
+}
+
+
+loadApiKeyStatus:
+function loadApiKeyStatus() {
+  if (!token) return;
+  fetch(API + "/api/user/api-key", {
+    headers: { "Authorization": "Bearer " + token }
+  }).then(function(r) { return r.json(); }).then(function(d) {
+    if (d.code === 200 && d.data && d.data.hasKey) {
+      var st = document.getElementById("apiKeyStatus");
+      st.style.display = "";
+      st.innerHTML = "\u5f53\u524d\u5df2\u914d\u7f6e " + d.data.masked;
+      st.style.borderLeft = "3px solid var(--success)";
+    }
+  });
+}
+
+
+generateReport:
+function generateReportFromHistory(){document.getElementById("reportSessionId").value=historySessionId;switchTab("report");generateReport()}
+
+function generateReport(){
+  if(!token){toast("请先登录","error");return}
+  var sid=document.getElementById("reportSessionId").value;
+  if(!sid){toast("请输入会话ID","error");return}
+  toast("正在生成报告...","info");
+  api("POST","/api/report/generate/"+sid).then(function(d){if(d.code===200&&d.data){displayReport(d.data);toast("报告已生成","success")}else{toast("生成失败: "+(d.message||"未知错误"),"error")}})
+}
+
+
+getReport:
+function getReport(){
+  if(!token){toast("请先登录","error");return}
+  var sid=document.getElementById("getReportSessionId").value;
+  if(!sid){toast("请输入会话ID","error");return}
+  api("GET","/api/report/"+sid).then(function(d){if(d.code===200&&d.data){displayReport(d.data)}else{toast("获取失败: "+(d.message||"未知错误"),"error")}})
+}
+
+
+saveApiKey:
+function saveApiKey() {
+  var key = document.getElementById("apiKeyInput").value.trim();
+  if (!key) { toast("\u8bf7\u8f93\u5165API Key", "error"); return; }
+  if (key.indexOf("sk-") !== 0) { toast("API Key \u5e94\u4ee5 sk- \u5f00\u5934", "error"); return; }
+  if (!token) { toast("\u8bf7\u5148\u767b\u5f55", "error"); return; }
+
+  var btn = document.querySelector('#tab-settings .btn-primary');
+  btn.textContent = "\u4fdd\u5b58\u4e2d..."; btn.disabled = true;
+
+  api("POST", "/api/user/api-key", { apiKey: key }).then(function(d) {
+    btn.textContent = "\u4fdd\u5b58"; btn.disabled = false;
+    if (d.code === 200) {
+      var status = document.getElementById("apiKeyStatus");
+      status.style.display = "";
+      status.innerHTML = "\u5df2\u4fdd\u5b58 " + d.data.masked;
+      status.style.borderLeft = "3px solid var(--success)";
+      document.getElementById("apiKeyInput").value = "";
+      toast("API Key \u5df2\u4fdd\u5b58", "success");
+    } else {
+      toast("\u4fdd\u5b58\u5931\u8d25: " + (d.message || "\u672a\u77e5\u9519\u8bef"), "error");
+    }
+  });
+}
+
+

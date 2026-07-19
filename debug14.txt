@@ -1,0 +1,10 @@
+dropZone ref: True
+fileInput ref: True
+dragover ref: True
+
+dropZone event listeners:
+document.getElementById("dropZone");
+dropZone.addEventListener("dragover",function(e){e.preventDefault();this.style.borderColor="var(--primary) !important"});
+dropZone.addEventListener("dragleave",function(){this.style.borderColor="var(--border)"});
+dropZone.addEventListener("drop",function(e){e.preventDefault();this.style.borderColor="var(--border)";if(e.dataTransfer.files.length>0)uploadFile(e.dataTransfer.files[0])});
+document.getElementById("fileInput").addEventListener("change",function(e){

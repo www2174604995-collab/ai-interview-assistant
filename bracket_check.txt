@@ -1,0 +1,3 @@
+Stack after uploadFile: 0
+UploadFile start (repr):
+'function uploadFile(file){\n  if(!file)return;\n  var ext=file.name.toLowerCase();\n  if(!ext.endsWith(".pdf")&&!ext.endsWith(".docx")){toast("\\u4ec5\\u652f\\u6301 PDF \\u548c DOCX \\u683c\\u5f0f","error");re'

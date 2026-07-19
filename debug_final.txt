@@ -1,0 +1,35 @@
+Functions:
+  0: updateUI
+  1: toast
+  2: api
+  3: setToken
+  4: logout
+  5: register
+  6: login
+  7: startInterview
+  8: sendChat
+  9: loadResume
+  10: switchTab
+  11: addMsg
+  12: endInterview
+  13: loadHistory
+  14: viewSession
+  15: endAndReport
+  16: closeHistoryDetail
+  17: loadToChat
+  18: generateReportFromHistory
+  19: generateReport
+  20: getReport
+  21: displayReport
+  22: chooseFile
+  23: uploadFile
+  24: deleteResume
+
+Checks:
+  [PASS] uploadFile function
+  [PASS] loadResume function
+  [PASS] switchTab function
+  [PASS] deleteResume function
+  [PASS] startInterview hint
+  [PASS] chatMessage listener
+  [PASS] delete btn in HTML after preview

@@ -1,0 +1,5 @@
+loadResume in c: True
+switchTab in c: True
+chooseFile and saveApiKey: True
+chatMessage position: 16739
+saveApiKey position: -1

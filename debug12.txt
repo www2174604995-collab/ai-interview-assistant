@@ -1,0 +1,9 @@
+uploadFile in c: True
+Between chooseFile and deleteResume:
+function chooseFile(){document.getElementById("fileInput").click()}
+
+
+
+uploadFile context:
+th>0)uploadFile(e.dataTransfer.files[0])});
+document.ge

@@ -1,0 +1,14 @@
+Tabs section (6019 to 6590):
+<div class="tabs">
+<div class="tab active" onclick="switchTab('auth')">登录/注册</div>
+<div class="tab" onclick="switchTab('interview')">面试</div>
+<div class="tab" onclick="switchTab('history')">历史记录</div>
+<div class="tab" onclick="switchTab('report')">评估报告</div>
+<div class="tab" onclick="switchTab('resume')">简历</div>
+<div class="tab" onclick="switchTab('settings')">设置</div>
+</div>
+
+<div class="tab-content active" id="tab-auth">
+<div class="grid-2">
+<div class="card"><h3>注册新账号</h3>
+<div class="form-row"><label>用户名</label><input type="text" id="regUsername" value="demo"></div>

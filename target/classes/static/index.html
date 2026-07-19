@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 面试助手</title>
+<style>
+:root{--primary:#4f46e5;--primary-light:#6366f1;--bg:#0f0f1a;--card:#1a1a2e;--border:#2a2a4a;--text:#e0e0f0;--muted:#8888aa;--success:#22c55e;--error:#ef4444;--warn:#f59e0b}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+.container{max-width:1100px;margin:0 auto;padding:16px 20px}
+header{text-align:center;padding:24px 0 16px}
+header h1{font-size:1.8em;background:linear-gradient(135deg,#818cf8,#6366f1,#4f46e5);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+header p{color:var(--muted);font-size:0.9em;margin-top:4px}
+.toast{position:fixed;top:16px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast-item{padding:10px 18px;border-radius:8px;font-size:0.88em;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,0.3);animation:slideIn .25s ease;min-width:260px;max-width:400px}
+.toast-success{background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.3);color:var(--success)}
+.toast-error{background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:var(--error)}
+.toast-info{background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);color:#818cf8}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:14px}
+.card h3{font-size:1em;margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.form-row{margin-bottom:10px}
+.form-row label{display:block;font-size:0.8em;color:var(--muted);margin-bottom:3px}
+.form-row input,.form-row textarea,.form-row select{width:100%;padding:7px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.9em;outline:none;transition:border .2s}
+.form-row input:focus,.form-row textarea:focus{border-color:var(--primary)}
+.form-row textarea{font-family:inherit;resize:vertical;min-height:44px}
+.btn{padding:7px 18px;border:none;border-radius:6px;font-size:0.88em;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-light);transform:translateY(-1px)}
+.btn-primary:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+.btn-success{background:var(--success);color:#fff;border:none;padding:7px 18px;border-radius:6px;font-size:0.88em;font-weight:600;cursor:pointer}
+.btn-success:hover{opacity:0.9;transform:translateY(-1px)}.btn-danger{background:var(--error);color:#fff;border:none;padding:5px 14px;border-radius:6px;font-size:0.82em;font-weight:600;cursor:pointer;transition:all .2s}.btn-danger:hover{background:#dc2626;transform:translateY(-1px)}
+.btn-sm{padding:4px 12px;font-size:0.8em}
+.badge{font-size:0.75em;padding:2px 10px;border-radius:10px}
+.badge-on{background:rgba(34,197,94,0.15);color:var(--success);border:1px solid rgba(34,197,94,0.3)}
+.badge-off{background:rgba(239,68,68,0.15);color:var(--error);border:1px solid rgba(239,68,68,0.3)}
+.tabs{display:flex;gap:0;margin-bottom:14px;border-bottom:1px solid var(--border)}
+.tab{padding:8px 18px;cursor:pointer;font-size:0.85em;color:var(--muted);border-bottom:2px solid transparent;transition:all .2s;margin-bottom:-1px}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--primary);border-bottom-color:var(--primary)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+.chat-box{background:#0a0a18;border:1px solid var(--border);border-radius:10px;padding:12px;max-height:380px;overflow-y:auto;margin-bottom:8px}
+.msg{margin-bottom:10px;padding:10px 14px;border-radius:8px;font-size:0.88em;line-height:1.65}
+.msg-user{background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.15);margin-left:auto;max-width:85%}
+.msg-ai{background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.1);max-width:92%}
+.msg-label{font-size:0.7em;color:var(--muted);margin-bottom:3px;font-weight:600}
+.msg-user .msg-label{color:#818cf8}
+.msg-ai .msg-label{color:var(--success)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:768px){.grid-2{grid-template-columns:1fr}}
+.history-item{padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;cursor:pointer;transition:border .2s;display:flex;justify-content:space-between;align-items:center}
+.history-item:hover{border-color:var(--primary)}
+.history-item .title{font-weight:600;font-size:0.9em}
+.history-item .meta{font-size:0.78em;color:var(--muted);margin-top:2px}
+.history-item .right{text-align:right;font-size:0.75em;color:var(--muted);white-space:nowrap}
+.msg-list{max-height:500px;overflow-y:auto}
+.msg-item{padding:8px 12px;margin-bottom:6px;border-radius:6px;font-size:0.85em;line-height:1.6}
+.msg-item-user{background:rgba(99,102,241,0.08);border-left:3px solid #818cf8}
+.msg-item-ai{background:rgba(34,197,94,0.06);border-left:3px solid var(--success)}
+.msg-item .tag{font-size:0.7em;font-weight:600;margin-bottom:2px}
+.msg-item-user .tag{color:#818cf8}
+.msg-item-ai .tag{color:var(--success)}
+#dropZone{cursor:pointer;transition:all .2s}
+#dropZone:hover{border-color:var(--primary)!important}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+<div class="container">
+<header><h1>AI 面试助手</h1><p>AI 模拟面试 - 多轮对话 - 自动评估报告</p></header>
+<div class="status-bar">
+<label>状态:</label><span class="badge badge-off" id="loginBadge">未登录</span>
+<input type="text" id="tokenDisplay" placeholder="-" readonly style="flex:2;">
+<button class="btn btn-sm btn-primary" id="logoutBtn" onclick="logout()" style="display:none;">退出</button>
+</div>
+<div class="tabs">
+<div class="tab active" onclick="switchTab('auth')">登录/注册</div>
+<div class="tab" onclick="switchTab('interview')">面试</div>
+<div class="tab" onclick="switchTab('history')">历史记录</div>
+<div class="tab" onclick="switchTab('report')">评估报告</div>
+<div class="tab" onclick="switchTab('resume')">简历</div>
+<div class="tab" onclick="switchTab('settings')">设置</div>
+</div>
+
+<div class="tab-content active" id="tab-auth">
+<div class="grid-2">
+<div class="card"><h3>注册新账号</h3>
+<div class="form-row"><label>用户名</label><input type="text" id="regUsername" value="demo"></div>
+<div class="form-row"><label>邮箱</label><input type="email" id="regEmail" value="demo@example.com"></div>
+<div class="form-row"><label>密码</label><input type="password" id="regPassword" value="demo123"></div>
+<button class="btn btn-primary" onclick="register()">注册</button></div>
+<div class="card"><h3>登录</h3>
+<div class="form-row"><label>用户名</label><input type="text" id="loginUsername" value="demo"></div>
+<div class="form-row"><label>密码</label><input type="password" id="loginPassword" value="demo123"></div>
+<button class="btn btn-primary" onclick="login()">登录</button></div>
+</div></div>
+
+<div class="tab-content" id="tab-interview">
+<div class="grid-2">
+<div class="card"><h3>开始面试</h3>
+<div class="form-row"><label>应聘职位</label><input type="text" id="startPosition" value="Java后端开发"></div>
+<div class="form-row"><label>难度</label>
+<select id="startDifficulty"><option value="EASY">简单</option><option value="MEDIUM" selected>中等</option><option value="HARD">困难</option></select></div>
+<button class="btn btn-primary" onclick="startInterview()">开始面试</button></div>
+<div class="card"><h3>发送回答</h3>
+<div class="form-row"><label>会话ID</label><input type="number" id="chatSessionId" placeholder="开始后自动填入"></div>
+<div class="form-row"><label>你的回答</label>
+<textarea id="chatMessage" rows="3" placeholder="Enter发送, Shift+Enter换行"></textarea></div>
+<div style="display:flex;gap:6px;">
+<button class="btn btn-primary" id="sendBtn" onclick="sendChat()" style="flex:1;">发送</button>
+<button class="btn btn-sm" style="background:var(--warn);color:#000;font-weight:600;" onclick="endInterview()">结束面试</button>
+</div></div></div>
+<div class="card"><h3><span id="chatHeader">对话面板</span> <span id="sessionStatus" style="font-size:0.7em;color:var(--muted);font-weight:400;"></span></h3>
+<div class="chat-box" id="chatBox"><div style="text-align:center;color:var(--muted);padding:30px;">点击"开始面试"开启模拟面试</div>
+</div>
+</div>
+</div>
+
+<div class="tab-content" id="tab-history">
+<div class="grid-2">
+<div class="card"><h3>面试列表</h3><button class="btn btn-primary btn-sm" onclick="loadHistory()">刷新</button><div id="historyList"></div></div>
+<div class="card" id="historyDetailCard" style="display:none;">
+<h3>会话详情 <span id="historyDetailTitle"></span></h3>
+<div style="margin-bottom:8px;display:flex;gap:6px;flex-wrap:wrap;">
+<button class="btn btn-success btn-sm" id="genReportFromHistory" onclick="generateReportFromHistory()">生成报告</button>
+<button class="btn btn-primary btn-sm" onclick="loadToChat()">加载到对话</button>
+<button class="btn btn-sm" style="background:var(--border);color:var(--text);" onclick="closeHistoryDetail()">关闭</button></div>
+<div class="msg-list" id="historyMessages"></div></div></div></div>
+
+<div class="tab-content" id="tab-report">
+<div class="grid-2">
+<div class="card"><h3>生成报告</h3>
+<div class="form-row"><label>会话ID</label><input type="number" id="reportSessionId" placeholder="输入ID生成报告"></div>
+<button class="btn btn-primary" onclick="generateReport()">生成评估报告</button></div>
+<div class="card"><h3>查看报告</h3>
+<div class="form-row"><label>会话ID</label><input type="number" id="getReportSessionId" placeholder="输入ID查看"></div>
+<button class="btn btn-primary" onclick="getReport()">查看报告</button></div></div>
+<div class="card" id="reportContent" style="display:none;"><h3>评估报告</h3><div id="reportBody"></div></div></div>
+
+<div class="tab-content" id="tab-resume">
+<div class="card"><h3>上传简历</h3>
+<p style="font-size:0.85em;color:var(--muted);margin-bottom:12px;">支持 PDF、DOCX 格式，5MB 限制。AI 面试官会根据简历内容针对性提问。</p>
+<div style="border:2px dashed var(--border);border-radius:10px;padding:30px;text-align:center;margin-bottom:12px;" id="dropZone">
+<div style="font-size:2.5em;margin-bottom:8px;">📄</div>
+<p style="color:var(--muted);font-size:0.9em;">拖拽文件到此处，或点击选择</p>
+<input type="file" id="fileInput" accept=".pdf,.docx" style="display:none;">
+<button class="btn btn-primary" style="margin-top:10px;" onclick="chooseFile()">选择文件</button></div>
+<div id="resumeStatus" style="display:none;padding:12px;background:var(--bg);border-radius:8px;margin-bottom:10px;"></div>
+<div id="resumePreview" style="display:none;">
+<h4 style="font-size:0.9em;color:var(--muted);margin-bottom:6px;">简历文本预览</h4>
+<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:0.82em;line-height:1.6;max-height:300px;overflow-y:auto;white-space:pre-wrap;" id="resumePreviewText"></div>
+<div id="resumeDeleteBtn" style="display:none;margin-top:8px;"><a href="javascript:void(0)" onclick="deleteResume()" style="color:var(--error);font-size:0.85em;text-decoration:none;">✨ 删除简历</a></div>
+</div></div></div>
+
+<div class="tab-content" id="tab-settings">
+  <div class="card">
+    <h3>⚙️ API Key 设置</h3>
+    <p style="font-size:0.85em;color:var(--muted);margin-bottom:12px;">
+      配置你的 DeepSeek API Key。每个用户使用自己的 Key，互不影响。
+      <a href="https://platform.deepseek.com/api_keys" target="_blank" style="color:var(--primary);">去 DeepSeek 获取 Key →</a>
+    </p>
+    <div class="form-row">
+      <label>DeepSeek API Key</label>
+      <input type="password" id="apiKeyInput" placeholder="输入你的 sk-..." style="font-family:monospace;">
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-primary" onclick="saveApiKey()">保存</button>
+      <button class="btn btn-sm" style="background:var(--border);color:var(--text);" onclick="toggleApiKeyVisibility()">显示/隐藏</button>
+    </div>
+    <div id="apiKeyStatus" style="display:none;margin-top:10px;padding:10px;background:var(--bg);border-radius:6px;font-size:0.85em;"></div>
+  </div>
+
+  <div class="card">
+    <h3>💡 使用说明</h3>
+    <ul style="font-size:0.85em;color:var(--muted);line-height:2;padding-left:16px;">
+      <li>API Key 仅保存在你自己的账号中，其他用户无法查看</li>
+      <li>每次对话时会使用你的 Key 调用 AI 模型</li>
+      <li>如果未配置 Key，开始面试时会提示你去设置</li>
+      <li>生产环境中 Key 会加密存储，传输使用 HTTPS</li>
+    </ul>
+  </div>
+</div>
+</div>
+
+<script>
+var API = "";
+var token = localStorage.getItem("jwt_token") || "";
+var currentSessionId = null;
+var historySessionId = null;
+updateUI();
+
+function updateUI() {
+  var b = document.getElementById("loginBadge"), d = document.getElementById("tokenDisplay"), o = document.getElementById("logoutBtn");
+  if (token) { b.textContent = "已登录"; b.className = "badge badge-on"; d.value = token.substring(0,15)+"..."; o.style.display = ""; }
+  else { b.textContent = "未登录"; b.className = "badge badge-off"; d.value = "-"; o.style.display = "none"; }
+}
+
+function toast(msg, t) {
+  var el = document.createElement("div"); el.className = "toast-item toast-"+t; el.textContent = msg;
+  document.getElementById("toast").appendChild(el);
+  setTimeout(function(){ el.style.transition="opacity 0.3s"; el.style.opacity="0"; setTimeout(function(){el.remove()},300); }, 3000);
+}
+
+function api(m, p, b) {
+  var o = {method:m, headers:{"Content-Type":"application/json"}};
+  if (token) o.headers["Authorization"] = "Bearer "+token;
+  if (b) o.body = JSON.stringify(b);
+  return fetch(API+p, o).then(function(r){return r.json()})["catch"](function(){return{code:500,message:"网络错误"}});
+}
+
+function setToken(t){token=t;localStorage.setItem("jwt_token",t);updateUI();}
+function logout(){token="";localStorage.removeItem("jwt_token");updateUI();toast("已退出登录","info");}
+function register(){api("POST","/api/auth/register",{username:document.getElementById("regUsername").value,email:document.getElementById("regEmail").value,password:document.getElementById("regPassword").value}).then(function(d){if(d.code===200){setToken(d.data.token);toast("注册成功! "+d.data.username,"success")}else{toast("注册失败: "+(d.message||"未知错误"),"error")}})}
+function login(){api("POST","/api/auth/login",{username:document.getElementById("loginUsername").value,password:document.getElementById("loginPassword").value}).then(function(d){if(d.code===200){setToken(d.data.token);toast("登录成功! "+d.data.username,"success")}else{toast("登录失败: "+(d.message||"用户名或密码错误"),"error")}})}
+
+function startInterview(){
+  if(!token){toast("请先登录","error");return}
+  var box=document.getElementById("chatBox");
+  box.innerHTML='<div style="text-align:center;color:var(--primary);padding:30px;">⏳ 正在分析简历并生成面试问题，请稍候...</div>';
+  toast("正在开始面试...","info");
+  api("POST","/api/interview/start",{position:document.getElementById("startPosition").value,difficulty:document.getElementById("startDifficulty").value}).then(function(d){
+    if(d.code===200){currentSessionId=d.data.sessionId;document.getElementById("chatSessionId").value=currentSessionId;document.getElementById("chatHeader").textContent="对话面板 - 会话 #"+currentSessionId;var box=document.getElementById("chatBox");box.innerHTML="";addMsg("ai",d.data.reply);toast("面试已开始! 会话 #"+currentSessionId,"success")}
+    else{toast("失败: "+(d.message||"未知错误"),"error")}})
+}
+function sendChat(){
+  var sid=document.getElementById("chatSessionId").value,msg=document.getElementById("chatMessage").value;
+  if(!sid){toast("请先开始面试","error");return}
+  if(!msg.trim()){toast("请输入回答","error");return}
+  addMsg("user",msg);document.getElementById("chatMessage").value="";
+  var btn=document.getElementById("sendBtn");btn.textContent="思考中...";btn.disabled=true;
+  api("POST","/api/interview/chat",{sessionId:parseInt(sid),message:msg}).then(function(d){
+    btn.textContent="发送";btn.disabled=false;document.getElementById("chatMessage").focus();
+    if(d.code===200&&d.data){addMsg("ai",d.data.reply);if(d.data.completed)setTimeout(function(){toast("面试已结束! 可生成报告","info")},500)}
+    else{addMsg("ai","错误: "+(d.message||"发送失败"))}})
+}
+
+
+function loadResume(){
+  if(!token)return;
+  fetch(API+"/api/resume",{headers:{"Authorization":"Bearer "+token}}).then(function(r){return r.json()}).then(function(d){
+    if(d.code===200&&d.data&&d.data.hasResume){
+      document.getElementById("resumeStatus").style.display="";
+      document.getElementById("resumeStatus").innerHTML="已上传简历，共 "+d.data.chars+" 个字符";
+      document.getElementById("resumeStatus").style.borderLeft="3px solid var(--success)";
+      document.getElementById("resumePreview").style.display="";
+      document.getElementById("resumePreviewText").textContent=d.data.preview+"...";
+      document.getElementById("resumeDeleteBtn").style.display="";
+    }
+  });
+}
+
+function switchTab(name){
+  document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active")});
+  document.querySelectorAll(".tab-content").forEach(function(t){t.classList.remove("active")});
+  var idx={auth:0,interview:1,history:2,report:3,resume:4,settings:5}[name];
+  if (idx !== undefined) { document.querySelectorAll(".tab")[idx].classList.add("active"); document.getElementById("tab-"+name).classList.add("active"); }
+  if(name==="history")loadHistory();
+  if(name==="resume")setTimeout(loadResume,100);
+  if(name==="settings")setTimeout(loadApiKeyStatus,100);
+}
+
+
+document.getElementById("chatMessage").addEventListener("keydown",function(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendChat()}});
+
+function addMsg(role,c){
+  var box=document.getElementById("chatBox");
+  if(box.children.length===1&&box.children[0].textContent.indexOf("开始面试")>=0)box.innerHTML="";
+  var div=document.createElement("div");div.className="msg msg-"+role;
+  div.innerHTML='<div class="msg-label">'+(role==="user"?"你":"面试官")+'</div>'+c.replace(/\n/g,"<br>");
+  box.appendChild(div);box.scrollTop=box.scrollHeight;
+  setTimeout(function(){box.scrollIntoView({behavior:"smooth",block:"nearest"})},50);
+}
+
+function endInterview(){
+  var sid=document.getElementById("chatSessionId").value;
+  if(!sid){toast("没有进行中的面试","error");return}
+  if(!confirm("确定结束面试? 结束后可生成报告"))return;
+  api("POST","/api/interview/end/"+sid).then(function(d){
+    if(d.code===200){toast("面试已结束","success");document.getElementById("sessionStatus").textContent="已结束"}
+    else{toast("操作失败: "+(d.message||"未知错误"),"error")}})
+}
+
+function loadHistory(){
+  if(!token){toast("请先登录","error");return}
+  api("GET","/api/interview/sessions").then(function(d){
+    var el=document.getElementById("historyList");
+    if(!d.data||d.data.length===0){el.innerHTML='<div style="color:var(--muted);padding:30px;text-align:center;">暂无记录</div>';return}
+    el.innerHTML=d.data.map(function(s){
+      var st=s.status==="COMPLETED"?"[完成]":"[进行]";
+      var t=new Date(s.createdAt).toLocaleString("zh-CN");
+      return '<div class="history-item" onclick="viewSession('+s.id+')"><div class="left"><div class="title">'+(s.position||"未知")+'</div><div class="meta">'+s.difficulty+" - "+(s.totalTurns||0)+"轮 - "+(s.messageCount||0)+"条</div></div><div class=\"right\">"+st+"<br>"+t+"</div></div>"}).join("")})
+}
+
+function viewSession(id){
+  api("GET","/api/interview/session/"+id).then(function(d){
+    if(d.code!==200){toast("加载失败","error");return}
+    var s=d.data;historySessionId=id;
+    document.getElementById("historyDetailCard").style.display="";
+    document.getElementById("historyDetailTitle").textContent="#"+id+" "+s.position;
+    var rb=document.getElementById("genReportFromHistory");
+    if(s.status==="COMPLETED"){rb.style.display="";rb.textContent=s.report?"查看报告":"生成报告";rb.onclick=generateReportFromHistory}
+    else{rb.style.display="";rb.textContent="强制结束并生成报告";rb.onclick=function(){endAndReport(id)}}
+    var el=document.getElementById("historyMessages");
+    if(!s.messages||s.messages.length===0){el.innerHTML='<div style="color:var(--muted);padding:20px;text-align:center;">暂无消息</div>';return}
+    el.innerHTML=s.messages.map(function(m){var r=m.role==="assistant"?"ai":"user";return '<div class="msg-item msg-item-'+r+'"><div class="tag">'+(m.role==="assistant"?"面试官":"你")+" - "+new Date(m.createdAt).toLocaleTimeString("zh-CN")+'</div>'+m.content+"</div>"}).join("")})
+}
+
+function endAndReport(id){api("POST","/api/interview/end/"+id).then(function(d){if(d.code===200){document.getElementById("reportSessionId").value=id;switchTab("report");generateReport()}else{toast("操作失败","error")}})}
+function closeHistoryDetail(){document.getElementById("historyDetailCard").style.display="none"}
+function loadToChat(){switchTab("interview");document.getElementById("chatSessionId").value=historySessionId;toast("已加载会话 #"+historySessionId,"info")}
+function generateReportFromHistory(){document.getElementById("reportSessionId").value=historySessionId;switchTab("report");generateReport()}
+
+function generateReport(){
+  if(!token){toast("请先登录","error");return}
+  var sid=document.getElementById("reportSessionId").value;
+  if(!sid){toast("请输入会话ID","error");return}
+  toast("正在生成报告...","info");
+  api("POST","/api/report/generate/"+sid).then(function(d){if(d.code===200&&d.data){displayReport(d.data);toast("报告已生成","success")}else{toast("生成失败: "+(d.message||"未知错误"),"error")}})
+}
+
+function getReport(){
+  if(!token){toast("请先登录","error");return}
+  var sid=document.getElementById("getReportSessionId").value;
+  if(!sid){toast("请输入会话ID","error");return}
+  api("GET","/api/report/"+sid).then(function(d){if(d.code===200&&d.data){displayReport(d.data)}else{toast("获取失败: "+(d.message||"未知错误"),"error")}})
+}
+
+function displayReport(data){
+  document.getElementById("reportContent").style.display="";
+  var body=document.getElementById("reportBody");
+  var r=data.report||"";
+  var html=r.replace(/### (.+)/g,'<h4 style="color:var(--primary);margin:14px 0 6px;">$1</h4>').replace(/## (.+)/g,'<h4 style="color:var(--primary);margin:14px 0 6px;font-size:1em;">$1</h4>').replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>");
+  var match=r.match(/(\d{1,3})\s*分/),scoreEl="";
+  if(match){var sc=parseInt(match[1]),cls=sc>=80?"score-high":(sc>=60?"score-mid":"score-low");scoreEl='<div style="text-align:center;padding:14px;margin-bottom:14px;background:var(--bg);border-radius:8px;"><span style="font-size:0.82em;color:var(--muted);">综合评分</span><br><span class="badge '+cls+'" style="font-size:1.8em;padding:4px 16px;border-radius:8px;">'+sc+'</span><span style="color:var(--muted);font-size:0.9em;">/100</span></div>'}
+  html=html.replace(/\n\n/g,"</p><p style='font-size:0.88em;line-height:1.7;margin-bottom:8px;'>").replace(/\n/g,"<br>");
+  body.innerHTML=scoreEl+'<p style="font-size:0.88em;line-height:1.7;">'+html+"</p>";
+  document.getElementById("getReportSessionId").value=data.sessionId;
+}
+
+// === 简历 ===
+var dropZone = document.getElementById("dropZone");
+dropZone.addEventListener("dragover",function(e){e.preventDefault();this.style.borderColor="var(--primary) !important"});
+dropZone.addEventListener("dragleave",function(){this.style.borderColor="var(--border)"});
+dropZone.addEventListener("drop",function(e){e.preventDefault();this.style.borderColor="var(--border)";if(e.dataTransfer.files.length>0)uploadFile(e.dataTransfer.files[0])});
+document.getElementById("fileInput").addEventListener("change",function(e){if(e.target.files.length>0)uploadFile(e.target.files[0])});
+function chooseFile(){document.getElementById("fileInput").click()}
+function uploadFile(file){
+  if(!file)return;
+  var ext=file.name.toLowerCase();
+  if(!ext.endsWith(".pdf")&&!ext.endsWith(".docx")){toast("\u4ec5\u652f\u6301 PDF \u548c DOCX \u683c\u5f0f","error");return}
+  if(file.size>5*1024*1024){toast("\u6587\u4ef6\u8d85\u8fc7 5MB \u9650\u5236","error");return}
+  if(!token){toast("\u8bf7\u5148\u767b\u5f55","error");return}
+  var st=document.getElementById("resumeStatus");st.style.display="";st.innerHTML="\u6b63\u5728\u4e0a\u4f20\u5e76\u89e3\u6790...";st.style.borderLeft="3px solid var(--primary)";
+  var fd=new FormData();fd.append("file",file);
+  fetch(API+"/api/resume/upload",{method:"POST",headers:{"Authorization":"Bearer "+token},body:fd}).then(function(r){return r.json()}).then(function(d){
+    if(d.code===200){st.innerHTML="\u4e0a\u4f20\u6210\u529f! \u5df2\u63d0\u53d6 "+d.data.chars+" \u4e2a\u5b57\u7b26";st.style.borderLeft="3px solid var(--success)";document.getElementById("resumePreview").style.display="";document.getElementById("resumePreviewText").textContent=d.data.preview+"...";document.getElementById("resumeDeleteBtn").style.display="";toast("\u7b80\u5386\u5df2\u66f4\u65b0!","success")}
+    else{st.innerHTML="\u5931\u8d25: "+(d.message||"\u672a\u77e5\u9519\u8bef");st.style.borderLeft="3px solid var(--error)";toast("\u4e0a\u4f20\u5931\u8d25: "+(d.message||"\u672a\u77e5\u9519\u8bef"),"error")}})
+}
+
+
+
+function deleteResume(){
+   if(!token){toast("请先登录","error");return}
+  if(!confirm("确定要删除简历吗？"))return;
+  api("DELETE","/api/resume").then(function(d){
+    if(d.code===200){
+      document.getElementById("resumeStatus").style.display="none";
+      document.getElementById("resumePreview").style.display="none";
+      document.getElementById("resumeDeleteBtn").style.display="none";
+      toast("简历已删除","success");
+    }else{
+      toast("删除失败: "+(d.message||"未知错误"),"error");
+    }
+  });
+}
+
+
+
+// ===== API Key 设置 =====
+function saveApiKey() {
+  var key = document.getElementById("apiKeyInput").value.trim();
+  if (!key) { toast("\u8bf7\u8f93\u5165API Key", "error"); return; }
+  if (key.indexOf("sk-") !== 0) { toast("API Key \u5e94\u4ee5 sk- \u5f00\u5934", "error"); return; }
+  if (!token) { toast("\u8bf7\u5148\u767b\u5f55", "error"); return; }
+
+  var btn = document.querySelector('#tab-settings .btn-primary');
+  btn.textContent = "\u4fdd\u5b58\u4e2d..."; btn.disabled = true;
+
+  api("POST", "/api/user/api-key", { apiKey: key }).then(function(d) {
+    btn.textContent = "\u4fdd\u5b58"; btn.disabled = false;
+    if (d.code === 200) {
+      var status = document.getElementById("apiKeyStatus");
+      status.style.display = "";
+      status.innerHTML = "\u5df2\u4fdd\u5b58 " + d.data.masked;
+      status.style.borderLeft = "3px solid var(--success)";
+      document.getElementById("apiKeyInput").value = "";
+      toast("API Key \u5df2\u4fdd\u5b58", "success");
+    } else {
+      toast("\u4fdd\u5b58\u5931\u8d25: " + (d.message || "\u672a\u77e5\u9519\u8bef"), "error");
+    }
+  });
+}
+
+function toggleApiKeyVisibility() {
+  var input = document.getElementById("apiKeyInput");
+  input.type = input.type === "password" ? "text" : "password";
+}
+
+function loadApiKeyStatus() {
+  if (!token) return;
+  fetch(API + "/api/user/api-key", {
+    headers: { "Authorization": "Bearer " + token }
+  }).then(function(r) { return r.json(); }).then(function(d) {
+    if (d.code === 200 && d.data && d.data.hasKey) {
+      var st = document.getElementById("apiKeyStatus");
+      st.style.display = "";
+      st.innerHTML = "\u5f53\u524d\u5df2\u914d\u7f6e " + d.data.masked;
+      st.style.borderLeft = "3px solid var(--success)";
+    }
+  });
+}
+
+</script>
+</body>
+</html>

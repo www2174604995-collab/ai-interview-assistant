@@ -1,0 +1,11 @@
+Occurrences of chatMessage:
+  position 16739: out(loadApiKeyStatus,100);
+}
+
+document.getElementById("chatMessage").value;
+  if
+  position 16898: ;return}
+  addMsg("user",msg);document.getElementById("chatMessage").value="";
+ 
+  position 17172: ntent="发送";btn.disabled=false;document.getElementById("chatMessage").focus();
+  

@@ -1,0 +1,6 @@
+Open divs: 60
+Close divs: 59
+Difference: 1
+
+MISSING CLOSES!
+Unclosed divs remaining: 1

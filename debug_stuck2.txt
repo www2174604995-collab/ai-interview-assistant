@@ -1,0 +1,157 @@
+send_start: 15377
+load_pos: 15505
+switch_pos: -1
+addMsg_pos: 16930
+
+From sendChat to loadResume:
+function sendChat(){
+  var sid=document.getElementById("chatSessionId").value,msg=document.getElementById("chatMessage").value;
+
+
+From loadResume to switchTab:
+function loadResume(){
+  if(!token)return;
+  fetch(API+"/api/resume",{headers:{"Authorization":"Bearer "+token}}).then(function(r){return r.json()}).then(function(d){
+    if(d.code===200&&d.data&&d.data.hasResume){
+      document.getElementById("resumeStatus").style.display="";
+      document.getElementById("resumeStatus").innerHTML="已上传简历，共 "+d.data.chars+" 个字符";
+      document.getElementById("resumeStatus").style.borderLeft="3px solid var(--success)";
+      document.getElementById("resumePreview").style.display="";
+      document.getElementById("resumePreviewText").textContent=d.data.preview+"...";
+      document.getElementById("resumeDeleteBtn").style.display="";
+    }
+  });
+}
+
+function switchTab(name){
+  document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active")});
+  document.querySelectorAll(".tab-content").forEach(function(t){t.classList.remove("active")});
+  var idx={auth:0,interview:1,history:2,report:3,resume:4,settings:5}[name];
+  if (idx !== undefined) { document.querySelectorAll(".tab")[idx].classList.add("active"); document.getElementById("tab-"+name).classList.add("active"); }
+  if(name==="history")loadHistory();
+  if(name==="resume")setTimeout(loadResume,100);
+  if(name==="settings")setTimeout(loadApiKeyStatus,100);
+}
+
+
+document.getElementById("chatMessage").addEventListener("keydown",function(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendChat()}});
+
+function addMsg(role,c){
+  var box=document.getElementById("chatBox");
+  if(box.children.length===1&&box.children[0].textContent.indexOf("开始面试")>=0)box.innerHTML="";
+  var div=document.createElement("div");div.className="msg msg-"+role;
+  div.innerHTML='<div class="msg-label">'+(role==="user"?"你":"面试官")+'</div>'+c.replace(/\n/g,"<br>");
+  box.appendChild(div);box.scrollTop=box.scrollHeight;
+  setTimeout(function(){box.scrollIntoView({behavior:"smooth",block:"nearest"})},50);
+}
+
+function endInterview(){
+  var sid=document.getElementById("chatSessionId").value;
+  if(!sid){toast("没有进行中的面试","error");return}
+  if(!confirm("确定结束面试? 结束后可生成报告"))return;
+  api("POST","/api/interview/end/"+sid).then(function(d){
+    if(d.code===200){toast("面试已结束","success");document.getElementById("sessionStatus").textContent="已结束"}
+    else{toast("操作失败: "+(d.message||"未知错误"),"error")}})
+}
+
+function loadHistory(){
+  if(!token){toast("请先登录","error");return}
+  api("GET","/api/interview/sessions").then(function(d){
+    var el=document.getElementById("historyList");
+    if(!d.data||d.data.length===0){el.innerHTML='<div style="color:var(--muted);padding:30px;text-align:center;">暂无记录</div>';return}
+    el.innerHTML=d.data.map(function(s){
+      var st=s.status==="COMPLETED"?"[完成]":"[进行]";
+      var t=new Date(s.createdAt).toLocaleString("zh-CN");
+      return '<div class="history-item" onclick="viewSession('+s.id+')"><div class="left"><div class="title">'+(s.position||"未知")+'</div><div class="meta">'+s.difficulty+" - "+(s.totalTurns||0)+"轮 - "+(s.messageCount||0)+"条</div></div><div class=\"right\">"+st+"<br>"+t+"</div></div>"}).join("")})
+}
+
+function viewSession(id){
+  api("GET","/api/interview/session/"+id).then(function(d){
+    if(d.code!==200){toast("加载失败","error");return}
+    var s=d.data;historySessionId=id;
+    document.getElementById("historyDetailCard").style.display="";
+    document.getElementById("historyDetailTitle").textContent="#"+id+" "+s.position;
+    var rb=document.getElementById("genReportFromHistory");
+    if(s.status==="COMPLETED"){rb.style.display="";rb.textContent=s.report?"查看报告":"生成报告";rb.onclick=generateReportFromHistory}
+    else{rb.style.display="";rb.textContent="强制结束并生成报告";rb.onclick=function(){endAndReport(id)}}
+    var el=document.getElementById("historyMessages");
+    if(!s.messages||s.messages.length===0){el.innerHTML='<div style="color:var(--muted);padding:20px;text-align:center;">暂无消息</div>';return}
+    el.innerHTML=s.messages.map(function(m){var r=m.role==="assistant"?"ai":"user";return '<div class="msg-item msg-item-'+r+'"><div class="tag">'+(m.role==="assistant"?"面试官":"你")+" - "+new Date(m.createdAt).toLocaleTimeString("zh-CN")+'</div>'+m.content+"</div>"}).join("")})
+}
+
+function endAndReport(id){api("POST","/api/interview/end/"+id).then(function(d){if(d.code===200){document.getElementById("reportSessionId").value=id;switchTab("report");generateReport()}else{toast("操作失败","error")}})}
+function closeHistoryDetail(){document.getElementById("historyDetailCard").style.display="none"}
+function loadToChat(){switchTab("interview");document.getElementById("chatSessionId").value=historySessionId;toast("已加载会话 #"+historySessionId,"info")}
+function generateReportFromHistory(){document.getElementById("reportSessionId").value=historySessionId;switchTab("report");generateReport()}
+
+function generateReport(){
+  if(!token){toast("请先登录","error");return}
+  var sid=document.getElementById("reportSessionId").value;
+  if(!sid){toast("请输入会话ID","error");return}
+  toast("正在生成报告...","info");
+  api("POST","/api/report/generate/"+sid).then(function(d){if(d.code===200&&d.data){displayReport(d.data);toast("报告已生成","success")}else{toast("生成失败: "+(d.message||"未知错误"),"error")}})
+}
+
+function getReport(){
+  if(!token){toast("请先登录","error");return}
+  var sid=document.getElementById("getReportSessionId").value;
+  if(!sid){toast("请输入会话ID","error");return}
+  api("GET","/api/report/"+sid).then(function(d){if(d.code===200&&d.data){displayReport(d.data)}else{toast("获取失败: "+(d.message||"未知错误"),"error")}})
+}
+
+function displayReport(data){
+  document.getElementById("reportContent").style.display="";
+  var body=document.getElementById("reportBody");
+  var r=data.report||"";
+  var html=r.replace(/### (.+)/g,'<h4 style="color:var(--primary);margin:14px 0 6px;">$1</h4>').replace(/## (.+)/g,'<h4 style="color:var(--primary);margin:14px 0 6px;font-size:1em;">$1</h4>').replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>");
+  var match=r.match(/(\d{1,3})\s*分/),scoreEl="";
+  if(match){var sc=parseInt(match[1]),cls=sc>=80?"score-high":(sc>=60?"score-mid":"score-low");scoreEl='<div style="text-align:center;padding:14px;margin-bottom:14px;background:var(--bg);border-radius:8px;"><span style="font-size:0.82em;color:var(--muted);">综合评分</span><br><span class="badge '+cls+'" style="font-size:1.8em;padding:4px 16px;border-radius:8px;">'+sc+'</span><span style="color:var(--muted);font-size:0.9em;">/100</span></div>'}
+  html=html.replace(/\n\n/g,"</p><p style='font-size:0.88em;line-height:1.7;margin-bottom:8px;'>").replace(/\n/g,"<br>");
+  body.innerHTML=scoreEl+'<p style="font-size:0.88em;line-height:1.7;">'+html+"</p>";
+  document.getElementById("getReportSessionId").value=data.sessionId;
+}
+
+// === 简历 ===
+var dropZone = document.getElementById("dropZone");
+dropZone.addEventListener("dragover",function(e){e.preventDefault();this.style.borderColor="var(--primary) !important"});
+dropZone.addEventListener("dragleave",function(){this.style.borderColor="var(--border)"});
+dropZone.addEventListener("drop",function(e){e.preventDefault();this.style.borderColor="var(--border)";if(e.dataTransfer.files.length>0)uploadFile(e.dataTransfer.files[0])});
+document.getElementById("fileInput").addEventListener("change",function(e){if(e.target.files.length>0)uploadFile(e.target.files[0])});
+function chooseFile(){document.getElementById("fileInput").click()}
+function uploadFile(file){
+  if(!file)return;
+  var ext=file.name.toLowerCase();
+  if(!ext.endsWith(".pdf")&&!ext.endsWith(".docx")){toast("\u4ec5\u652f\u6301 PDF \u548c DOCX \u683c\u5f0f","error");return}
+  if(file.size>5*1024*1024){toast("\u6587\u4ef6\u8d85\u8fc7 5MB \u9650\u5236","error");return}
+  if(!token){toast("\u8bf7\u5148\u767b\u5f55","error");return}
+  var st=document.getElementById("resumeStatus");st.style.display="";st.innerHTML="\u6b63\u5728\u4e0a\u4f20\u5e76\u89e3\u6790...";st.style.borderLeft="3px solid var(--primary)";
+  var fd=new FormData();fd.append("file",file);
+  fetch(API+"/api/resume/upload",{method:"POST",headers:{"Authorization":"Bearer "+token},body:fd}).then(function(r){return r.json()}).then(function(d){
+    if(d.code===200){st.innerHTML="\u4e0a\u4f20\u6210\u529f! \u5df2\u63d0\u53d6 "+d.data.chars+" \u4e2a\u5b57\u7b26";st.style.borderLeft="3px solid var(--success)";document.getElementById("resumePreview").style.display="";document.getElementById("resumePreviewText").textContent=d.data.preview+"...";document.getElementById("resumeDeleteBtn").style.display="";toast("\u7b80\u5386\u5df2\u66f4\u65b0!","success")}
+    else{st.innerHTML="\u5931\u8d25: "+(d.message||"\u672a\u77e5\u9519\u8bef");st.style.borderLeft="3px solid var(--error)";toast("\u4e0a\u4f20\u5931\u8d25: "+(d.message||"\u672a\u77e5\u9519\u8bef"),"error")}})
+}
+
+
+
+function deleteResume(){
+   if(!token){toast("请先登录","error");return}
+  if(!confirm("确定要删除简历吗？"))return;
+  api("DELETE","/api/resume").then(function(d){
+    if(d.code===200){
+      document.getElementById("resumeStatus").style.display="none";
+      document.getElementById("resumePreview").style.display="none";
+      document.getElementById("resumeDeleteBtn").style.display="none";
+      toast("简历已删除","success");
+    }else{
+      toast("删除失败: "+(d.message||"未知错误"),"error");
+    }
+  });
+}
+
+From switchTab to addMsg:
+
+
+After addMsg (first 30 chars):
+function addMsg(role,c){
+  var box=document.getElementById("chatBox");
+  if(box.children.length===1&

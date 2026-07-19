@@ -1,0 +1,4 @@
+loadResume in c: False
+function load in c: True
+switchTab not found
+Functions: ['updateUI', 'toast', 'api', 'setToken', 'logout', 'register', 'login', 'startInterview', 'sendChat', 'addMsg', 'endInterview', 'loadHistory', 'viewSession', 'endAndReport', 'closeHistoryDetail', 'loadToChat', 'generateReportFromHistory', 'generateReport', 'getReport', 'displayReport', 'chooseFile', 'deleteResume']

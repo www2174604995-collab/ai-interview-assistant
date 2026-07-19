@@ -1,0 +1,20 @@
+Current sendChat:
+function sendChat(){
+  var sid=document.getElementById("chatSessionId").value,msg=
+
+
+Check for pushed rest:
+chatMessage.value found: False
+
+addMsg at: 16886
+function addMsg(role,c){
+  var box=document.getElementById("chatBox");
+  if(box.children.length===1&&box.children[0].textContent.indexOf("开始面试")>=0)box.innerHTML="";
+  var div=document.createElement("
+
+listener at: 16779
+addEventListener("keydown",function(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendChat()}});
+
+function addMsg(role,c){
+  var box=document.getElementById("chatBox");
+  if(box.children.leng

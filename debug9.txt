@@ -1,0 +1,32 @@
+send_start: 15377
+send_first_line: function sendChat(){
+  var sid=document.getElementById("chatSessionId").value,msg=
+
+
+rest_of_sendchat:
+document.getElementById("chatMessage").value;
+  if(!sid){toast("请先开始面试","error");return}
+  if(!msg.trim()){toast("请输入回答","error");return}
+  addMsg("user",msg);document.getElementById("chatMessage").value="";
+  var btn=document.getElementById("sendBtn");btn.textContent="思考中...";btn.disabled=true;
+  api("POST","/api/interview/chat",{sessionId:parseInt(sid),message:msg}).then(function(d){
+    btn.textContent="发送";btn.disabled=false;document.getElementById("chatMessage").focus();
+    if(d.code===200&&d.data){addMsg("ai",d.data.reply);if(d.data.completed)setTimeout(function(){toast("面试已结束! 可生成报告","info")},500)}
+    else{addMsg("ai","错误: "+(d.message||"发送失败"))}})
+}
+
+
+
+listener_pos: -1
+listener NOT FOUND!
+
+Between switchTab and pushed rest:
+
+
+
+
+After pushed_end:
+function addMsg(role,c){
+  var box=document.getElementById("chatBox");
+  if(box.children.length===1&&box.children[0].textContent.indexOf("开始面试")>=0)box.innerHTML="";
+  var div=document.createElement("

@@ -1,0 +1,62 @@
+uploadFile:
+function uploadFile(file){
+  if(!file)return;
+  var ext=file.name.toLowerCase();
+  if(!ext.endsWith(".pdf")&&!ext.endsWith(".docx")){toast("\u4ec5\u652f\u6301 PDF \u548c DOCX \u683c\u5f0f","error");return}
+  if(file.size>5*1024*1024){toast("\u6587\u4ef6\u8d85\u8fc7 5MB \u9650\u5236","error");return}
+  if(!token){toast("\u8bf7\u5148\u767b\u5f55","error");return}
+  var st=document.getElementById("resumeStatus");st.style.display="";st.innerHTML="\u6b63\u5728\u4e0a\u4f20\u5e76\u89e3\u6790...";st.style.borderLeft="3px solid var(--primary)";
+  var fd=new FormData();fd.append("file",file);
+  fetch(API+"/api/resume/upload",{method:"POST",headers:{"Authorization":"Bearer "+token},body:fd}).then(function(r){return r.json()}).then(function(d){
+    if(d.code===200){st.innerHTML="\u4e0a\u4f20\u6210\u529f! \u5df2\u63d0\u53d6 "+d.data.chars+" \u4e2a\u5b57\u7b26";st.style.borderLeft="3px solid var(--success)";document.getElementById("resumePreview").style.display="";document.getElementById("resumePreviewText").textContent=d.data.preview+"...";document.getElementById("resumeDeleteBtn").style.display="";toast("\u7b80\u5386\u5df2\u66f4\u65b0!","success")}
+    else{st.innerHTML="\u5931\u8d25: "+(d.message||"\u672a\u77e5\u9519\u8bef");st.style.borderLeft="3px solid var(--error)";toast("\u4e0a\u4f20\u5931\u8d25: "+(d.message||"\u672a\u77e5\u9519\u8bef"),"error")}})
+}
+
+deleteResume:
+function deleteResume(){
+   if(!token){toast("请先登录","error");return}
+  if(!confirm("确定要删除简历吗？"))return;
+  api("DELETE","/api/resume").then(function(d){
+    if(d.code===200){
+      document.getElementById("resumeStatus").style.display="none";
+      document.getElementById("resumePreview").style.display="none";
+      document.getElementById("resumeDeleteBtn").style.display="none";
+      toast("简历已删除","success");
+    }else{
+      toast("删除失败: "+(d.message||"未知错误"),"error");
+    }
+  });
+}
+
+Has </body>: False
+Has </html>: False
+Has </script>: False
+Found unicode escape in JS: "\u4ec5 at 23573
+Found unicode escape in JS: f\u6301 at 23585
+Found unicode escape in JS:  \u548c at 23596
+Found unicode escape in JS:  \u683c at 23608
+Found unicode escape in JS: "\u6587 at 23674
+Found unicode escape in JS: 6\u8d85 at 23686
+Found unicode escape in JS:  \u9650 at 23703
+Found unicode escape in JS: "\u8bf7 at 23754
+Found unicode escape in JS: 8\u767b at 23766
+Found unicode escape in JS: "\u6b63 at 23880
+Found unicode escape in JS: 8\u4e0a at 23892
+Found unicode escape in JS: 0\u5e76 at 23904
+Found unicode escape in JS: 3\u6790 at 23916
+Found unicode escape in JS: "\u4e0a at 24211
+Found unicode escape in JS: 0\u6210 at 24223
+Found unicode escape in JS:  \u5df2 at 24237
+Found unicode escape in JS: 0\u53d6 at 24249
+Found unicode escape in JS:  \u4e2a at 24273
+Found unicode escape in JS: 7\u7b26 at 24285
+Found unicode escape in JS: "\u7b80 at 24543
+Found unicode escape in JS: 6\u5df2 at 24555
+Found unicode escape in JS: 4\u65b0 at 24567
+Found unicode escape in JS: "\u5931 at 24611
+Found unicode escape in JS: "\u672a at 24640
+Found unicode escape in JS: 5\u9519 at 24652
+Found unicode escape in JS: "\u4e0a at 24719
+Found unicode escape in JS: 0\u5931 at 24731
+Found unicode escape in JS: "\u672a at 24760
+Found unicode escape in JS: 5\u9519 at 24772

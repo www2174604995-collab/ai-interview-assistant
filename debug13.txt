@@ -1,0 +1,4 @@
+th>0)uploadFile(e.dataTransfer.files[0])});
+----
+th>0)uploadFile(e.target.files[0])});
+----

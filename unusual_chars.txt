@@ -1,0 +1,22 @@
+Unusual chars found:
+  0x9d (?) : 52 times
+  0x88 (?) : 47 times
+  0x8a (?) : 45 times
+  0x80 (?) : 45 times
+  0x95 (?) : 41 times
+  0x9f (?) : 40 times
+  0x94 (?) : 37 times
+  0x90 (?) : 32 times
+  0x99 (?) : 31 times
+  0x9a (?) : 29 times
+  0x9c (?) : 29 times
+  0x86 (?) : 27 times
+  0x8b (?) : 23 times
+  0x91 (?) : 23 times
+  0x8e (?) : 21 times
+  0x8f (?) : 21 times
+  0x85 (?) : 21 times
+  0x8c (?) : 20 times
+  0x93 (?) : 18 times
+  0x84 (?) : 15 times
+  Pos 322: context=b'title>AI \xe9\x9d\xa2\xe8\xaf\x95\xe5\x8a\xa9\xe6\x89\x8b</title>\r'

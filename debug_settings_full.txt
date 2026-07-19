@@ -1,0 +1,17 @@
+Settings tab full content:
+tab-settings">
+  <div class="card">
+    <h3>⚙️ API Key 设置</h3>
+    <p style="font-size:0.85em;color:var(--muted);margin-bottom:12px;">
+      配置你的 DeepSeek API Key。每个用户使用自己的 Key，互不影响。
+      <a href="https://platform.deepseek.com/api_keys" target="_blank" style="color:var(--primary);">去 DeepSeek 获取 Key →</a>
+    </p>
+    <div class="form-row">
+      <label>DeepSeek API Key</label>
+      <input type="password" id="apiKeyInput" placeholder="输入你的 sk-..." style="font-family:monospace;">
+    </div>
+
+---
+apiKeyStatus found: False
+saveApiKey onclick found: False
+apiKeyInput found: True

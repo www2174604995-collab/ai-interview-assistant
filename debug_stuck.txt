@@ -1,0 +1,15 @@
+startInterview:
+function startInterview(){
+  if(!token){toast("请先登录","error");return}
+  // 检查是否有简历，有则提示正在分析
+  fetch(API+"/api/resume",{headers:{"Authorization":"Bearer "+token}}).then(function(r){return r.json()}).then(function(d){if(d.code===200&&d.data&&d.data.hasResume){toast("正在分析简历并生成面试问题，请稍候...","info")}});
+  toast("正在开始面试...","info");
+  api("POST","/api/interview/start",{position:document.getElementById("startPosition").value,difficulty:document.getElementById("startDifficulty").value}).then(function(d){
+    if(d.code===200){currentSessionId=d.data.sessionId;document.getElementById("chatSessionId").value=currentSessionId;document.getElementById("chatHeader").textContent="对话面板 - 会话 #"+currentSessionId;var box=document.getElementById("chatBox");box.innerHTML="";addMsg("ai",d.data.reply);toast("面试已开始! 会话 #"+currentSessionId,"success")}
+    else{toast("失败: "+(d.message||"未知错误"),"error")}})
+}
+
+
+sendChat:
+function sendChat(){
+  var sid=document.getElementById("chatSessionId").value,msg=document.getElementById("chatMessage").value;

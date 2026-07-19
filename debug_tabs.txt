@@ -1,0 +1,13 @@
+Tabs HTML:
+<div class="tabs">
+<div class="tab active" onclick="switchTab('auth')">登录/注册</div>
+<div class="tab" onclick="switchTab('interview')">面试</div>
+
+Tab count: 5
+Tab-content count: 5
+Tab "auth": True
+Tab "interview": True
+Tab "history": True
+Tab "report": True
+Tab "resume": True
+Tab "settings": True

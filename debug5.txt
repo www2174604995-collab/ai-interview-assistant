@@ -1,0 +1,64 @@
+Functions in order:
+  0: updateUI
+  1: toast
+  2: api
+  3: setToken
+  4: logout
+  5: register
+  6: login
+  7: startInterview
+  8: sendChat
+  9: loadResume
+  10: switchTab
+  11: addMsg
+  12: endInterview
+  13: loadHistory
+  14: viewSession
+  15: endAndReport
+  16: closeHistoryDetail
+  17: loadToChat
+  18: generateReportFromHistory
+  19: generateReport
+  20: getReport
+  21: displayReport
+  22: chooseFile
+  23: deleteResume
+
+loadResume content:
+function loadResume(){
+  if(!token)return;
+  fetch(API+"/api/resume",{headers:{"Authorization":"Bearer "+token}}).then(function(r){return r.json()}).then(function(d){
+    if(d.code===200&&d.data&&d.data.hasResume){
+      document.getElementById("resumeStatus").style.display="";
+      document.getElementById("resumeStatus").innerHTML="已上传简历，共 "+d.data.chars+" 个字符";
+      document.getElementById("resumeStatus").style.borderLeft="3px solid var(--success)";
+      document.getElementById("resumePreview").style.display="";
+      document.getElementById("resumePreviewText").textContent=d.data.preview+"...";
+      document.getElementById("resumeDeleteBtn").style.display="";
+    }
+  });
+}
+
+
+switchTab content:
+function switchTab(name){
+  document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active")});
+  document.querySelectorAll(".tab-content").forEach(function(t){t.classList.remove("active")});
+  var idx={auth:0,interview:1,history:2,report:3,resume:4,settings:5}[name];
+  if (idx !== undefined) { document.querySelectorAll(".tab")[idx].classList.add("active"); document.getElementById("tab-"+name).classList.add("active"); }
+  if(name==="history")loadHistory();
+  if(name==="resume")setTimeout(loadResume,100);
+  if(name==="settings")setTimeout(loadApiKeyStatus,100);
+}
+
+document.getElementById("chatMessage").value;
+  if(!sid){toast("请先开始面试","error");return}
+  if(!msg.trim()){toast("请输入回答","error");return}
+  addMsg("user",msg);document.getElementById("chatMessage").value="";
+  var btn=document.getElementById("sendBtn");btn.textContent="思考中...";btn.disabled=true;
+  api("POST","/api/interview/chat",{sessionId:parseInt(sid),message:msg}).then(function(d){
+    btn.textContent="发送";btn.disabled=false;document.getElementById("chatMessage").focus();
+    if(d.code===200&&d.data){addMsg("ai",d.data.reply);if(d.data.completed)setTimeout(function(){toast("面试已结束! 可生成报告","info")},500)}
+    else{addMsg("ai","错误: "+(d.message||"发送失败"))}})
+}
+

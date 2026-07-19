@@ -1,0 +1,17 @@
+Between chooseFile and chatMessage listener:
+function chooseFile(){document.getElementById("fileInput").click()}
+
+function deleteResume(){
+   if(!token){toast("请先登录","error");return}
+  if(!confirm("确定要删除简历吗？"))return;
+  api("DELETE","/api/resume").then(function(d){
+    if(d.code===200){
+      document.getElementById("resumeStatus").style.display="none";
+      document.getElementById("resumePreview").style.display="none";
+      document.getElementById("resumeDeleteBtn").style.display="none";
+      toast("简历已删除","success");
+    }else{
+      toast("删除失败: "+(d.message||"未知错误"),"error");
+    }
+  });
+}

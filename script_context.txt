@@ -1,0 +1,36 @@
+Before script (last 200 chars):
+">
+      <li>API Key 仅保存在你自己的账号中，其他用户无法查看</li>
+      <li>每次对话时会使用你的 Key 调用 AI 模型</li>
+      <li>如果未配置 Key，开始面试时会提示你去设置</li>
+      <li>生产环境中 Key 会加密存储，传输使用 HTTPS</li>
+    </ul>
+  </div>
+</div>
+</div>
+
+
+
+--- First 1000 chars of script ---
+<script>
+var API = "";
+var token = localStorage.getItem("jwt_token") || "";
+var currentSessionId = null;
+var historySessionId = null;
+updateUI();
+
+function updateUI() {
+  var b = document.getElementById("loginBadge"), d = document.getElementById("tokenDisplay"), o = document.getElementById("logoutBtn");
+  if (token) { b.textContent = "已登录"; b.className = "badge badge-on"; d.value = token.substring(0,15)+"..."; o.style.display = ""; }
+  else { b.textContent = "未登录"; b.className = "badge badge-off"; d.value = "-"; o.style.display = "none"; }
+}
+
+function toast(msg, t) {
+  var el = document.createElement("div"); el.className = "toast-item toast-"+t; el.textContent = msg;
+  document.getElementById("toast").appendChild(el);
+  setTimeout(function(){ el.style.transition="opacity 0.3s"; el.style.opacity="0"; setTimeout(function(){el.remove()},300); }, 3000);
+}
+
+function api(m, p, b) {
+  var o = {method:m, headers:{"Content-Type":"application/json"}};
+  if (token) o.headers["Authorization"] = "B
