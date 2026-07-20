@@ -67,7 +67,7 @@ http://localhost:8080
 
 ## 📸 截图
 
-![注册登录页面](https://github.com/user-attachments/assets/91c6d710-ee87-445f-b710-aa19eb08936f)
+![注册登录页面](https://github.com/www2174604995-collab/ai-interview-assistant/blob/main/images/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202026-07-20%20175120.png)
 
 ![面试对话页面](https://github.com/user-attachments/assets/107ad5d1-4083-4f11-8955-0a6e61b247fd)
 
