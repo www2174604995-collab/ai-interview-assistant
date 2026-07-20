@@ -64,11 +64,3 @@ http://localhost:8080
 ├── Dockerfile
 ├── docker-compose.yml
 └── pom.xml
-
-## 📸 截图
-
-![注册登录页面](https://github.com/www2174604995-collab/ai-interview-assistant/blob/main/images/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202026-07-20%20175120.png)
-
-![面试对话页面](https://github.com/user-attachments/assets/107ad5d1-4083-4f11-8955-0a6e61b247fd)
-
-![评估报告页面](https://github.com/user-attachments/assets/844859bc-b12c-4869-af4a-81adc618af1d)
