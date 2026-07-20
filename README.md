@@ -65,7 +65,10 @@ http://localhost:8080
 ├── docker-compose.yml
 └── pom.xml
 
-<img width="979" height="481" alt="屏幕截图 2026-07-20 175120" src="https://github.com/user-attachments/assets/91c6d710-ee87-445f-b710-aa19eb08936f" />
-<img width="881" height="503" alt="屏幕截图 2026-07-20 175200" src="https://github.com/user-attachments/assets/107ad5d1-4083-4f11-8955-0a6e61b247fd" />
-<img width="878" height="500" alt="屏幕截图 2026-07-20 175213" src="https://github.com/user-attachments/assets/844859bc-b12c-4869-af4a-81adc618af1d" />
+## 📸 截图
 
+![注册登录页面](https://github.com/user-attachments/assets/91c6d710-ee87-445f-b710-aa19eb08936f)
+
+![面试对话页面](https://github.com/user-attachments/assets/107ad5d1-4083-4f11-8955-0a6e61b247fd)
+
+![评估报告页面](https://github.com/user-attachments/assets/844859bc-b12c-4869-af4a-81adc618af1d)
