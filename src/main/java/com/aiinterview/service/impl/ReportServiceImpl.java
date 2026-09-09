@@ -1,5 +1,9 @@
 package com.aiinterview.service.impl;
 
+import com.aiinterview.constant.AuthConstants;
+import com.aiinterview.constant.InterviewConstants;
+import com.aiinterview.exception.BusinessException;
+import com.aiinterview.exception.ResourceNotFoundException;
 import com.aiinterview.model.dto.ReportResponse;
 import com.aiinterview.model.entity.InterviewSession;
 import com.aiinterview.model.entity.User;
@@ -47,15 +51,15 @@ public class ReportServiceImpl implements ReportService {
     @Value("${spring.ai.openai.base-url:https://api.deepseek.com}")
     private String baseUrl;
 
-    @Value("")
+    @Value("${spring.ai.openai.chat.options.model:deepseek-v4-flash}")
     private String modelName;
 
     private ChatClient buildChatClient(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("用户不存在"));
+                .orElseThrow(() -> new ResourceNotFoundException("用户不存在"));
         String apiKey = user.getApiKey();
         if (apiKey == null || apiKey.isBlank()) {
-            throw new RuntimeException("请先在「设置」页面配置你的 DeepSeek API Key");
+            throw new BusinessException(AuthConstants.ERROR_API_KEY_NOT_CONFIGURED);
         }
         OpenAiApi api = new OpenAiApi(baseUrl, apiKey);
         OpenAiChatOptions options = OpenAiChatOptions.builder()
@@ -71,13 +75,14 @@ public class ReportServiceImpl implements ReportService {
         ChatClient chatClient = buildChatClient(userId);
 
         InterviewSession session = sessionRepository.findByIdAndUserId(sessionId, userId)
-                .orElseThrow(() -> new RuntimeException("面试会话不存在"));
-        if (!"COMPLETED".equals(session.getStatus())) {
-            throw new RuntimeException("面试未结束，无法生成报告");
+                .orElseThrow(() -> new ResourceNotFoundException(InterviewConstants.ERROR_SESSION_NOT_FOUND));
+        
+        if (!InterviewConstants.STATUS_COMPLETED.equals(session.getStatus())) {
+            throw new BusinessException(InterviewConstants.ERROR_SESSION_NOT_COMPLETED);
         }
 
         String conversation = messageRepository.findBySessionIdOrderByCreatedAtAsc(sessionId).stream()
-                .map(m -> ("user".equals(m.getRole()) ? "候选人" : "面试官") + ": " + m.getContent())
+                .map(m -> (InterviewConstants.ROLE_USER.equals(m.getRole()) ? "候选人" : "面试官") + ": " + m.getContent())
                 .collect(Collectors.joining("\n\n"));
 
         String report = chatClient.prompt()
@@ -85,30 +90,42 @@ public class ReportServiceImpl implements ReportService {
                 .call().content();
 
         long qCount = messageRepository.findBySessionIdOrderByCreatedAtAsc(sessionId).stream()
-                .filter(m -> "assistant".equals(m.getRole())).count();
+                .filter(m -> InterviewConstants.ROLE_ASSISTANT.equals(m.getRole())).count();
 
         session.setReport(report);
         session.setTotalQuestions((int) qCount);
         sessionRepository.save(session);
 
+        log.info("Report generated for session: sessionId={}", sessionId);
+
         return ReportResponse.builder()
-                .sessionId(session.getId()).position(session.getPosition())
-                .difficulty(session.getDifficulty()).totalQuestions((int) qCount)
-                .totalTurns(session.getTotalTurns()).report(report)
-                .createdAt(session.getCreatedAt()).build();
+                .sessionId(session.getId())
+                .position(session.getPosition())
+                .difficulty(session.getDifficulty())
+                .totalQuestions((int) qCount)
+                .totalTurns(session.getTotalTurns())
+                .report(report)
+                .createdAt(session.getCreatedAt())
+                .build();
     }
 
     @Override
     public ReportResponse getReport(Long userId, Long sessionId) {
         InterviewSession session = sessionRepository.findByIdAndUserId(sessionId, userId)
-                .orElseThrow(() -> new RuntimeException("面试会话不存在"));
+                .orElseThrow(() -> new ResourceNotFoundException(InterviewConstants.ERROR_SESSION_NOT_FOUND));
+        
         if (session.getReport() == null) {
-            throw new RuntimeException("报告尚未生成");
+            throw new BusinessException(InterviewConstants.ERROR_REPORT_NOT_GENERATED);
         }
+        
         return ReportResponse.builder()
-                .sessionId(session.getId()).position(session.getPosition())
-                .difficulty(session.getDifficulty()).totalQuestions(session.getTotalQuestions())
-                .totalTurns(session.getTotalTurns()).report(session.getReport())
-                .createdAt(session.getCreatedAt()).build();
+                .sessionId(session.getId())
+                .position(session.getPosition())
+                .difficulty(session.getDifficulty())
+                .totalQuestions(session.getTotalQuestions())
+                .totalTurns(session.getTotalTurns())
+                .report(session.getReport())
+                .createdAt(session.getCreatedAt())
+                .build();
     }
 }

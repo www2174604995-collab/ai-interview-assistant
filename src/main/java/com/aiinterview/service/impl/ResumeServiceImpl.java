@@ -1,5 +1,8 @@
 package com.aiinterview.service.impl;
 
+import com.aiinterview.constant.FileConstants;
+import com.aiinterview.exception.FileProcessException;
+import com.aiinterview.exception.ResourceNotFoundException;
 import com.aiinterview.model.entity.User;
 import com.aiinterview.repository.UserRepository;
 import com.aiinterview.service.ResumeService;
@@ -15,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -25,7 +29,6 @@ import java.nio.file.StandardCopyOption;
 @Service
 @RequiredArgsConstructor
 public class ResumeServiceImpl implements ResumeService {
-
     private final UserRepository userRepository;
 
     @Value("${app.upload-dir:uploads/resumes}")
@@ -35,20 +38,14 @@ public class ResumeServiceImpl implements ResumeService {
     @Transactional
     public String uploadResume(Long userId, MultipartFile file) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("用户不存在"));
+                .orElseThrow(() -> new ResourceNotFoundException(FileConstants.ERROR_USER_NOT_FOUND));
 
+        // 验证文件
         String filename = file.getOriginalFilename();
-        if (filename == null || filename.isBlank()) {
-            throw new RuntimeException("文件名不能为空");
-        }
+        validateFile(filename, file.getSize());
 
-        String ext = "";
-        int dotIdx = filename.lastIndexOf('.');
-        if (dotIdx > 0) ext = filename.substring(dotIdx).toLowerCase();
-
-        if (!ext.equals(".pdf") && !ext.equals(".docx")) {
-            throw new RuntimeException("仅支持 PDF 和 DOCX 格式");
-        }
+        String ext = extractFileExtension(filename);
+        validateFileExtension(ext);
 
         try {
             // 保存文件
@@ -66,10 +63,11 @@ public class ResumeServiceImpl implements ResumeService {
             user.setResumeFileName(filename);
             userRepository.save(user);
 
-            log.info("简历上传成功: userId={}, file={}, chars={}", userId, filename, text.length());
+            log.info("Resume uploaded successfully: userId={}, file={}, chars={}", userId, filename, text.length());
             return text;
         } catch (IOException e) {
-            throw new RuntimeException("文件处理失败: " + e.getMessage());
+            log.error("Failed to process resume file for userId={}: {}", userId, e.getMessage());
+            throw new FileProcessException(FileConstants.ERROR_FILE_PROCESS_FAILED, e);
         }
     }
 
@@ -80,37 +78,50 @@ public class ResumeServiceImpl implements ResumeService {
                 .orElse(null);
     }
 
-
     @Override
     @Transactional
     public void deleteResume(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("用户不存在"));
+                .orElseThrow(() -> new ResourceNotFoundException(FileConstants.ERROR_USER_NOT_FOUND));
         user.setResumeText(null);
         user.setResumeFileName(null);
         userRepository.save(user);
-        log.info("简历已删除 userId={}", userId);
+        log.info("Resume deleted for userId={}", userId);
+    }
+
+    private void validateFile(String filename, long fileSize) {
+        if (filename == null || filename.isBlank()) {
+            throw new FileProcessException(FileConstants.ERROR_FILE_NAME_EMPTY);
+        }
+        if (fileSize > FileConstants.MAX_FILE_SIZE) {
+            throw new FileProcessException(FileConstants.ERROR_FILE_TOO_LARGE);
+        }
+    }
+
+    private String extractFileExtension(String filename) {
+        int dotIdx = filename.lastIndexOf('.');
+        return dotIdx > 0 ? filename.substring(dotIdx).toLowerCase() : "";
+    }
+
+    private void validateFileExtension(String ext) {
+        if (!FileConstants.PDF_EXTENSION.equals(ext) && !FileConstants.DOCX_EXTENSION.equals(ext)) {
+            throw new FileProcessException(FileConstants.ERROR_UNSUPPORTED_FILE_FORMAT);
+        }
     }
 
     private String extractText(MultipartFile file, String ext) throws IOException {
         byte[] bytes = file.getBytes();
-        String text;
-
-        if (ext.equals(".pdf")) {
-            text = extractPdfText(bytes);
-        } else if (ext.equals(".docx")) {
-            text = extractDocxText(bytes);
-        } else {
-            throw new RuntimeException("不支持的文件格式: " + ext);
-        }
+        String text = FileConstants.PDF_EXTENSION.equals(ext) 
+                ? extractPdfText(bytes) 
+                : extractDocxText(bytes);
 
         if (text.isBlank()) {
-            throw new RuntimeException("无法提取到文本内容，请检查文件");
+            throw new FileProcessException(FileConstants.ERROR_NO_TEXT_EXTRACTED);
         }
 
-        // 限制文本长度，避免超出 token 限制
-        if (text.length() > 5000) {
-            text = text.substring(0, 5000);
+        // 限制文本长度
+        if (text.length() > FileConstants.MAX_RESUME_TEXT_LENGTH) {
+            text = text.substring(0, FileConstants.MAX_RESUME_TEXT_LENGTH);
         }
         return text;
     }
@@ -123,7 +134,7 @@ public class ResumeServiceImpl implements ResumeService {
     }
 
     private String extractDocxText(byte[] bytes) throws IOException {
-        try (XWPFDocument doc = new XWPFDocument(new java.io.ByteArrayInputStream(bytes));
+        try (XWPFDocument doc = new XWPFDocument(new ByteArrayInputStream(bytes));
              XWPFWordExtractor extractor = new XWPFWordExtractor(doc)) {
             return extractor.getText();
         }
